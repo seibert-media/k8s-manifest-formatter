@@ -1,6 +1,10 @@
-hash: 1cd3a655c509ffd0736692e507fd9bd7d45962881051e67a3f9618fa5890789e
-updated: 2018-03-29T17:26:12.287244958+02:00
+hash: c577d750894815018e5c1924e8830459c047a5fcee5964a4a3d0517667bf7c93
+updated: 2018-03-29T18:28:30.871560007+02:00
 imports:
+- name: github.com/bborbe/io
+  version: 8c22cf733cf166b247318b0786eec0c7cad9208a
+  subpackages:
+  - util
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/gogo/protobuf

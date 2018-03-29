@@ -1,3 +1,3 @@
-# Kubernetes Manifest Formater
+# Kubernetes Manifest Formatter
 
-Tools for formating Kubernetes YAML files.
+Tools for formatting Kubernetes YAML files.
