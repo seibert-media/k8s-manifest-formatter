@@ -10,8 +10,9 @@ import (
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
-	"io"
 	"bytes"
+	k8s_runtime "k8s.io/apimachinery/pkg/runtime"
+	"io"
 	io_util "github.com/bborbe/io/util"
 )
 
@@ -81,16 +82,27 @@ func formatYaml(content []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("yaml to json failed: %v", err)
 	}
+	obj, err := kind(content)
+	if err != nil {
+		return nil, fmt.Errorf("create object by content failed: %v", err)
+	}
+	if _, _, err := unstructured.UnstructuredJSONScheme.Decode(content, nil, obj); err != nil {
+		return nil, fmt.Errorf("unmarshal to object %v failed: %v", obj.GetObjectKind(), err)
+	}
+	return yaml.Marshal(obj)
+}
+
+func kind(content []byte) (k8s_runtime.Object, error) {
 	_, kind, err := unstructured.UnstructuredJSONScheme.Decode(content, nil, nil)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal failed: %v", err)
+		return nil, fmt.Errorf("unmarshal to unknown failed: %v", err)
+	}
+	if kind.Kind == "Secret" {
+		return nil, nil
 	}
 	obj, err := scheme.Scheme.New(*kind)
 	if err != nil {
 		return nil, fmt.Errorf("create object failed: %v", err)
 	}
-	if _, _, err := unstructured.UnstructuredJSONScheme.Decode(content, nil, obj); err != nil {
-		return nil, fmt.Errorf("unmarshal failed: %v", err)
-	}
-	return yaml.Marshal(&obj)
+	return obj, nil
 }
