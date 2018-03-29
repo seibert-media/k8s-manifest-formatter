@@ -86,8 +86,8 @@ func formatYaml(content []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create object by content failed: %v", err)
 	}
-	if _, _, err := unstructured.UnstructuredJSONScheme.Decode(content, nil, obj); err != nil {
-		return nil, fmt.Errorf("unmarshal to object %v failed: %v", obj.GetObjectKind(), err)
+	if obj, _, err = unstructured.UnstructuredJSONScheme.Decode(content, nil, obj); err != nil {
+		return nil, fmt.Errorf("unmarshal to object failed: %v", err)
 	}
 	return yaml.Marshal(obj)
 }
