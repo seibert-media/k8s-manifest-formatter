@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"io"
 	"bytes"
+	io_util "github.com/bborbe/io/util"
 )
 
 const (
@@ -36,31 +37,35 @@ func main() {
 		fmt.Fprintf(os.Stderr, "parameter %s missing\n", parameterPath)
 		os.Exit(1)
 	}
-	file, err := os.Open(*pathPtr)
+	path, err := io_util.NormalizePath(*pathPtr)
 	if err != nil {
-		glog.Exitf("open file %s failed: %v", *pathPtr, err)
+		glog.Exitf("normalize path: %s failed: %v", path, err)
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		glog.Exitf("open file %s failed: %v", path, err)
 	}
 	defer file.Close()
 	fileInfo, err := file.Stat()
 	if err != nil {
-		glog.Exitf("get file stat failed: %v", *pathPtr, err)
+		glog.Exitf("get file stat failed: %v", path, err)
 	}
 	content, err := ioutil.ReadAll(file)
 	if err != nil {
-		glog.Exitf("read %s failed: %v", *pathPtr, err)
+		glog.Exitf("read %s failed: %v", path, err)
 	}
 	formatedContent, err := formatYaml(content)
 	if err != nil {
-		glog.Exitf("format yaml %s failed: %v", *pathPtr, err)
+		glog.Exitf("format yaml %s failed: %v", path, err)
 	}
 	if *writePtr {
-		if err := ioutil.WriteFile(*pathPtr, formatedContent, fileInfo.Mode()); err != nil {
+		if err := ioutil.WriteFile(path, formatedContent, fileInfo.Mode()); err != nil {
 			glog.Exitf("write file failed: %v", err)
 		}
 		glog.V(0).Infof("write file completed")
 	} else if *validatePtr {
 		if bytes.Compare(content, formatedContent) != 0 {
-			fmt.Printf("content is not formatted\n")
+			fmt.Fprintf(os.Stderr, "content of %s is not formatted\n", path)
 			os.Exit(1)
 		}
 		glog.V(0).Infof("content is formatted")
