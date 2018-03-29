@@ -10,14 +10,20 @@ import (
 	"github.com/ghodss/yaml"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
+	"io"
+	"bytes"
 )
 
 const (
-	parameterPath = "path"
+	parameterPath     = "path"
+	parameterWrite    = "write"
+	parameterValidate = "validate"
 )
 
 var (
-	pathPtr = flag.String(parameterPath, "", "path")
+	pathPtr     = flag.String(parameterPath, "", "path")
+	writePtr    = flag.Bool(parameterWrite, false, "write formates content back to file")
+	validatePtr = flag.Bool(parameterValidate, false, "validate content is already formated")
 )
 
 func main() {
@@ -43,12 +49,25 @@ func main() {
 	if err != nil {
 		glog.Exitf("read %s failed: %v", *pathPtr, err)
 	}
-	content, err = formatYaml(content)
+	formatedContent, err := formatYaml(content)
 	if err != nil {
 		glog.Exitf("format yaml %s failed: %v", *pathPtr, err)
 	}
-	if err := ioutil.WriteFile(*pathPtr, content, fileInfo.Mode()); err != nil {
-		glog.Exitf("write file failed: %v", err)
+	if *writePtr {
+		if err := ioutil.WriteFile(*pathPtr, formatedContent, fileInfo.Mode()); err != nil {
+			glog.Exitf("write file failed: %v", err)
+		}
+		glog.V(0).Infof("write file completed")
+	} else if *validatePtr {
+		if bytes.Compare(content, formatedContent) != 0 {
+			fmt.Printf("content is not formatted\n")
+			os.Exit(1)
+		}
+		glog.V(0).Infof("content is formatted")
+	} else {
+		if _, err := io.Copy(os.Stdout, bytes.NewBuffer(formatedContent)); err != nil {
+			glog.Exitf("print content failed")
+		}
 	}
 }
 
