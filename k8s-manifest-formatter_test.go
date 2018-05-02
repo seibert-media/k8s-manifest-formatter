@@ -51,28 +51,4 @@ status:
 			Expect(gbytes.BufferWithBytes(output)).To(gbytes.Say(content))
 		})
 	})
-	Context("yaml long line", func() {
-		content := `apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  creationTimestamp: null
-  labels:
-    app: long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long
-spec: {}
-status:
-  loadBalancer: {}
-`
-		It("return no error", func() {
-			_, err := formatYaml([]byte(content))
-			Expect(err).To(BeNil())
-		})
-		It("output not empty no error", func() {
-			output, _ := formatYaml([]byte(content))
-			Expect(output).NotTo(HaveLen(0))
-		})
-		It("output match input", func() {
-			output, _ := formatYaml([]byte(content))
-			Expect(gbytes.BufferWithBytes(output)).To(gbytes.Say(content))
-		})
-	})
 })
