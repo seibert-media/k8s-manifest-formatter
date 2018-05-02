@@ -1,19 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"runtime"
-	"github.com/golang/glog"
-	"github.com/ghodss/yaml"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/kubernetes/scheme"
-	"bytes"
-	k8s_runtime "k8s.io/apimachinery/pkg/runtime"
-	"io"
+
 	io_util "github.com/bborbe/io/util"
+	"github.com/ghodss/yaml"
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	k8s_runtime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 const (
