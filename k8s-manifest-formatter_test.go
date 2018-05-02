@@ -1,21 +1,26 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+)
 
-func TestFormatYamlIlllega(t *testing.T) {
-	_, err := formatYaml([]byte(`illegal content`))
-	if err == nil {
-		t.Fatal("err expected")
-	}
+func TestFormatter(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "K8s Manifest Formatter Suite")
 }
 
-func TestFormatYaml(t *testing.T) {
-	content:=`apiVersion: extensions/v1beta1
+var _ = Describe("Formatter", func() {
+	Context("valid content", func() {
+		content := `apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: traefik
-    traefik.frontend.priority: '10000'
+    traefik.frontend.priority: "10000"
+  creationTimestamp: null
   labels:
     app: webdav
   name: webdav
@@ -29,9 +34,44 @@ spec:
           serviceName: webdav
           servicePort: web
         path: /
+status:
+  loadBalancer: {}
 `
-	_, err := formatYaml([]byte(content))
-	if err != nil {
-		t.Fatal("err not expected")
-	}
-}
+		It("return no error", func() {
+			_, err := formatYaml([]byte(content))
+			Expect(err).To(BeNil())
+		})
+		It("output not empty no error", func() {
+			output, _ := formatYaml([]byte(content))
+			Expect(output).NotTo(HaveLen(0))
+		})
+		It("output match input", func() {
+			output, _ := formatYaml([]byte(content))
+			Expect(gbytes.BufferWithBytes(output)).To(gbytes.Say(content))
+		})
+	})
+	Context("yaml long line", func() {
+		content := `apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  labels:
+    app: long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long
+spec: {}
+status:
+  loadBalancer: {}
+`
+		It("return no error", func() {
+			_, err := formatYaml([]byte(content))
+			Expect(err).To(BeNil())
+		})
+		It("output not empty no error", func() {
+			output, _ := formatYaml([]byte(content))
+			Expect(output).NotTo(HaveLen(0))
+		})
+		It("output match input", func() {
+			output, _ := formatYaml([]byte(content))
+			Expect(gbytes.BufferWithBytes(output)).To(gbytes.Say(content))
+		})
+	})
+})
